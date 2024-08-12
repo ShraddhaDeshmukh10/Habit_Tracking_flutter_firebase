@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "619464328672",
+    "project_id": "habit03-b8f5d",
+    "storage_bucket": "habit03-b8f5d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:619464328672:android:24e1adf85555453ba79785",
+        "android_client_info": {
+          "package_name": "com.example.habit03"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDzIUz_Ys8Mi8dkvSkTQRnnQvVHctGJaQQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
