@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:habit03/Login.dart';
 import 'package:habit03/controller/ThemeController.dart';
 import 'package:habit03/controller/UserContoller.dart';
+import 'package:habit03/controller/notification.dart'; // Import NotificationService
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 
@@ -18,12 +19,15 @@ class _HomescreenState extends State<Homescreen> {
   final TextEditingController habitController = TextEditingController();
   final ThemeController themeController = Get.put(ThemeController());
   DateTime? selectedDate;
+  final NotificationService _notificationService =
+      NotificationService(); // Add NotificationService instance
 
   @override
   void initState() {
     super.initState();
     userController.loadHabits();
-    userController.loadProgress(); // Load progress for today
+    userController.loadProgress();
+    _notificationService.init(); // Initialize notification service
   }
 
   @override
@@ -99,10 +103,20 @@ class _HomescreenState extends State<Homescreen> {
                 suffixIcon: IconButton(
                   icon: Icon(Icons.add),
                   onPressed: () {
-                    userController.addHabit(habitController.text);
-                    habitController.clear();
-                    userController
-                        .saveProgress(); // Save progress after adding habit
+                    String newHabit = habitController.text;
+                    if (newHabit.isNotEmpty) {
+                      userController.addHabit(newHabit);
+                      userController
+                          .saveProgress(); // Save progress after adding habit
+
+                      // Trigger a notification after adding a habit
+                      _notificationService.showNotification(
+                        'New Habit Added',
+                        'You just added a new habit: $newHabit',
+                      );
+
+                      habitController.clear(); // Clear input
+                    }
                   },
                 ),
               ),
@@ -136,6 +150,12 @@ class _HomescreenState extends State<Homescreen> {
                             userController.incrementTime(index);
                             userController
                                 .saveProgress(); // Save progress after updating time
+
+                            // Trigger a notification when time is incremented
+                            _notificationService.showNotification(
+                              'Habit Updated',
+                              'You spent more time on: ${habit.name}',
+                            );
                           },
                         ),
                         IconButton(
