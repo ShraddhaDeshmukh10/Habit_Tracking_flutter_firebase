@@ -1,6 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:workmanager/workmanager.dart';
 
 class NotificationService {
   final FlutterLocalNotificationsPlugin _notificationsPlugin =
@@ -20,13 +19,6 @@ class NotificationService {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       showForegroundNotification(message);
     });
-
-    Workmanager().registerPeriodicTask(
-      "1",
-      "simplePeriodicTask",
-      frequency: Duration(minutes: 1), // Set frequency to 1 minute
-      initialDelay: Duration(seconds: 10), // Optional initial delay
-    );
   }
 
   Future<void> showNotification(String title, String body) async {

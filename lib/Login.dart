@@ -30,9 +30,14 @@ class _HabitTrackerLoginState extends State<HabitTrackerLogin> {
     try {
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
-
       Get.offAll(Homescreen()); // Navigate to the HomeScreen
       Get.snackbar("Success", "Welcome back!");
+      // if (userCredential.user != null) {
+      //   Get.toNamed('/homescreen', arguments: {
+      //     'userId': userCredential.user!.uid,
+      //     'password': password,
+      //   });
+      // }
     } catch (e) {
       Get.snackbar("Login Failed",
           "Please check your email and password and try again.");
@@ -48,13 +53,6 @@ class _HabitTrackerLoginState extends State<HabitTrackerLogin> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        // decoration: BoxDecoration(
-        //   image: DecorationImage(
-        //     image: NetworkImage(
-        //         "https://your-background-image-url-here"), // Replace with an appropriate background image URL
-        //     fit: BoxFit.cover,
-        //   ),
-        // ),
         margin: EdgeInsets.all(20),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -126,7 +124,6 @@ class _HabitTrackerLoginState extends State<HabitTrackerLogin> {
             ),
             TextButton(
               onPressed: () {
-                // Navigate to the signup page
                 Get.to(() => SignupPage());
               },
               child: Text("Don’t have an account? Sign Up"),
