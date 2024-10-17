@@ -1,3 +1,8 @@
+buildscript {
+    ext.kotlin_version = '1.8.22' // or latest version available
+}
+
+
 allprojects {
     repositories {
         google()

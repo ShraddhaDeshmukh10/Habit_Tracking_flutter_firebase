@@ -6,6 +6,7 @@ import 'package:habit03/controller/ThemeController.dart';
 import 'package:habit03/controller/notification.dart';
 import 'package:habit03/firebase_options.dart';
 import 'package:get/get.dart';
+import 'package:workmanager/workmanager.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,7 +31,19 @@ Future<void> main() async {
   } else if (settings.authorizationStatus == AuthorizationStatus.denied) {
     print('User denied permission');
   }
+  Workmanager().initialize(callbackDispatcher);
   runApp(const MyApp());
+}
+
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    // Schedule notification every minute
+    NotificationService().showNotification(
+      "Habit Reminder",
+      "It's time to work on your habit!",
+    );
+    return Future.value(true);
+  });
 }
 
 class MyApp extends StatelessWidget {
