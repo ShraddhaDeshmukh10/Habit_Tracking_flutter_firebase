@@ -9,13 +9,9 @@ class NotificationService {
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
     const InitializationSettings initializationSettings =
-        InitializationSettings(
-      android: initializationSettingsAndroid,
-    );
+        InitializationSettings(android: initializationSettingsAndroid);
 
     await _notificationsPlugin.initialize(initializationSettings);
-
-    // Setup Firebase Messaging for foreground notifications
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       showForegroundNotification(message);
     });
@@ -28,9 +24,12 @@ class NotificationService {
       'Habit Tracker Channel',
       importance: Importance.max,
       priority: Priority.high,
+      sound: RawResourceAndroidNotificationSound('new_music'),
     );
+
     const NotificationDetails platformChannelSpecifics =
         NotificationDetails(android: androidPlatformChannelSpecifics);
+
     await _notificationsPlugin.show(0, title, body, platformChannelSpecifics);
   }
 
@@ -41,7 +40,7 @@ class NotificationService {
       'Habit Tracker Channel',
       importance: Importance.max,
       priority: Priority.high,
-      sound: RawResourceAndroidNotificationSound('new_music'),
+      sound: RawResourceAndroidNotificationSound('new_music'), // Custom sound
       playSound: true,
       ticker: 'ticker',
     );
@@ -50,7 +49,7 @@ class NotificationService {
         NotificationDetails(android: androidPlatformChannelSpecifics);
 
     await _notificationsPlugin.show(
-      0, // Notification ID (unique)
+      0,
       message.notification?.title ?? 'Title', // Fallback to "Title"
       message.notification?.body ?? 'Body', // Fallback to "Body"
       platformChannelSpecifics,

@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
 
 class Habit {
   final String name;
@@ -48,8 +49,12 @@ class UserController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    _initializeUser();
+  }
+
+  Future<void> _initializeUser() async {
     email.value = _auth.currentUser?.email ?? '';
-    loadProfileImage();
+    await loadProfileImage();
     loadHabits();
   }
 
@@ -81,8 +86,13 @@ class UserController extends GetxController {
           });
 
           final downloadUrl = await (await uploadTask).ref.getDownloadURL();
-
           profileImageUrl.value = downloadUrl;
+
+          // Update Firestore with the new image URL
+          await _firestore.collection('users').doc(uid).update({
+            'profileImageUrl': downloadUrl,
+          });
+
           print('Image uploaded successfully: $downloadUrl');
         } catch (e) {
           print('Error uploading image: $e');
@@ -102,6 +112,19 @@ class UserController extends GetxController {
         print('Error loading image: $e');
       }
     }
+  }
+
+  // New function to save user login state to SharedPreferences
+  Future<void> saveLoginState() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('email', email.value);
+    // Optionally save other user information
+  }
+
+  Future<void> loadLoginState() async {
+    final prefs = await SharedPreferences.getInstance();
+    email.value = prefs.getString('email') ?? '';
+    // Optionally load other user information
   }
 
   void saveProgress() async {

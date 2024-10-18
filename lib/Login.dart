@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:habit03/HomeScreen.dart';
 import 'package:habit03/Signup.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HabitTrackerLogin extends StatefulWidget {
   const HabitTrackerLogin({super.key});
@@ -21,6 +22,27 @@ class _HabitTrackerLoginState extends State<HabitTrackerLogin> {
   void initState() {
     super.initState();
     passwordVisible = true;
+    _checkLoginStatus(); // Check if user is already logged in
+  }
+
+  Future<void> _checkLoginStatus() async {
+    // Check saved credentials in SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    String? savedEmail = prefs.getString('email');
+    String? savedPassword = prefs.getString('password');
+
+    if (savedEmail != null && savedPassword != null) {
+      // Attempt to sign in with saved credentials
+      try {
+        UserCredential userCredential = await FirebaseAuth.instance
+            .signInWithEmailAndPassword(
+                email: savedEmail, password: savedPassword);
+        Get.offAll(Homescreen()); // Navigate to the HomeScreen directly
+      } catch (e) {
+        // Handle error if sign in fails
+        print("Auto sign-in failed: $e");
+      }
+    }
   }
 
   Future<void> _login() async {
@@ -30,14 +52,15 @@ class _HabitTrackerLoginState extends State<HabitTrackerLogin> {
     try {
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
+
+      // Save email and password to SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('email', email);
+      await prefs.setString(
+          'password', password); // Save the password (optional)
+
       Get.offAll(Homescreen()); // Navigate to the HomeScreen
       Get.snackbar("Success", "Welcome back!");
-      // if (userCredential.user != null) {
-      //   Get.toNamed('/homescreen', arguments: {
-      //     'userId': userCredential.user!.uid,
-      //     'password': password,
-      //   });
-      // }
     } catch (e) {
       Get.snackbar("Login Failed",
           "Please check your email and password and try again.");

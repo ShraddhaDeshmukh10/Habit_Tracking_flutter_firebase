@@ -6,6 +6,7 @@ import 'package:habit03/Login.dart';
 import 'package:habit03/controller/ThemeController.dart';
 import 'package:habit03/controller/UserContoller.dart';
 import 'package:habit03/controller/notification.dart'; // Import NotificationService
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 
@@ -46,7 +47,9 @@ class _HomescreenState extends State<Homescreen> {
             icon: Icon(Icons.logout),
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
-              Get.to(HabitTrackerLogin());
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.remove('email');
+              Get.offAll(HabitTrackerLogin());
             },
           ),
         ],
