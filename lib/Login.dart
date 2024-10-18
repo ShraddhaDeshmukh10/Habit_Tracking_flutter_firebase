@@ -1,9 +1,11 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:habit03/HomeScreen.dart';
 import 'package:habit03/Signup.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:habit03/controller/notification.dart'; // Import Notification Service
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HabitTrackerLogin extends StatefulWidget {
@@ -17,30 +19,37 @@ class _HabitTrackerLoginState extends State<HabitTrackerLogin> {
   bool passwordVisible = false;
   TextEditingController emailController = TextEditingController();
   TextEditingController passController = TextEditingController();
+  final NotificationService _notificationService = NotificationService();
 
   @override
   void initState() {
     super.initState();
     passwordVisible = true;
-    _checkLoginStatus(); // Check if user is already logged in
+    _checkLoginStatus();
+    _configureFirebaseMessaging();
   }
 
   Future<void> _checkLoginStatus() async {
-    // Check saved credentials in SharedPreferences
     final prefs = await SharedPreferences.getInstance();
     String? savedEmail = prefs.getString('email');
     String? savedPassword = prefs.getString('password');
 
     if (savedEmail != null && savedPassword != null) {
-      // Attempt to sign in with saved credentials
       try {
         UserCredential userCredential = await FirebaseAuth.instance
             .signInWithEmailAndPassword(
                 email: savedEmail, password: savedPassword);
-        Get.offAll(Homescreen()); // Navigate to the HomeScreen directly
+
+        Get.offAll(Homescreen());
+
+        // _notificationService.showNotification(
+        //   'Hello',
+        //   'Let\'s add new habits or work on them!',
+        // );
+        Get.snackbar("Success", "Welcome back!");
       } catch (e) {
-        // Handle error if sign in fails
-        print("Auto sign-in failed: $e");
+        Get.snackbar("Login Failed",
+            "Please check your email and password and try again.");
       }
     }
   }
@@ -52,19 +61,53 @@ class _HabitTrackerLoginState extends State<HabitTrackerLogin> {
     try {
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
-
-      // Save email and password to SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('email', email);
-      await prefs.setString(
-          'password', password); // Save the password (optional)
+      await prefs.setString('password', password);
+      Get.offAll(Homescreen());
+      // _notificationService.showNotification(
+      //   'Hello',
+      //   'Let\'s add new habits or work on them!',
+      // );
 
-      Get.offAll(Homescreen()); // Navigate to the HomeScreen
+      // String notificationTitle = 'Hello';
+      // String notificationBody = 'Let\'s add new habits or work on them!';
+      // Get.offAll(() => Homescreen(), arguments: {
+      //   'title': notificationTitle,
+      //   'body': notificationBody,
+      // });
+
       Get.snackbar("Success", "Welcome back!");
     } catch (e) {
       Get.snackbar("Login Failed",
           "Please check your email and password and try again.");
     }
+  }
+
+  void _configureFirebaseMessaging() {
+    // Foreground message handling
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      if (message.notification != null) {
+        String? route =
+            message.data['route']; // Extract the 'route' key from data
+        if (route != null) {
+          _notificationService.showForegroundNotification(message);
+          // Navigate to the route passed in the notification data
+          Get.toNamed(route);
+        } else {
+          _notificationService.showForegroundNotification(message);
+        }
+      }
+    });
+
+    // Handle notification when the app is in background and opened by a notification
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      String? route =
+          message.data['route']; // Extract the 'route' key from data
+      if (route != null) {
+        Get.toNamed(route); // Navigate to the specified route
+      }
+    });
   }
 
   @override
@@ -138,7 +181,7 @@ class _HabitTrackerLoginState extends State<HabitTrackerLogin> {
                   backgroundColor:
                       MaterialStateProperty.all<Color>(Colors.blueAccent),
                 ),
-                onPressed: _login,
+                onPressed: _login, // Trigger login function
                 child: Text(
                   "Login",
                   style: TextStyle(fontSize: 20, color: Colors.white),

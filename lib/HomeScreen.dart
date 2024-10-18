@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:habit03/Login.dart';
 import 'package:habit03/controller/ThemeController.dart';
 import 'package:habit03/controller/UserContoller.dart';
-import 'package:habit03/controller/notification.dart'; // Import NotificationService
+import 'package:habit03/controller/notification.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
@@ -20,8 +20,7 @@ class _HomescreenState extends State<Homescreen> {
   final TextEditingController habitController = TextEditingController();
   final ThemeController themeController = Get.put(ThemeController());
   DateTime? selectedDate;
-  final NotificationService _notificationService =
-      NotificationService(); // Add NotificationService instance
+  final NotificationService _notificationService = NotificationService();
 
   @override
   void initState() {
@@ -29,10 +28,24 @@ class _HomescreenState extends State<Homescreen> {
     userController.loadHabits();
     userController.loadProgress();
     _notificationService.init(); // Initialize notification service
+
+    // final Map<String, dynamic> args = Get.arguments ?? {};
+    // final String title = args['title'] ?? 'Default Title';
+    // final String body = args['body'] ?? 'Default Body';
+
+    // if (title != 'Default Title') {
+    //   Get.snackbar(title, body);
+    // }
   }
 
   @override
   Widget build(BuildContext context) {
+    final Map<String, dynamic> args = Get.arguments ?? {};
+    if (args.isNotEmpty) {
+      String title = args['title'] ?? 'No Title';
+      String body = args['body'] ?? 'No Body';
+      _notificationService.showNotification(title, body);
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text('Habit Tracker'),
@@ -78,7 +91,7 @@ class _HomescreenState extends State<Homescreen> {
                   icon: Icon(Icons.camera_alt),
                   onPressed: () async {
                     await userController.uploadProfileImage();
-                    setState(() {}); // Refresh profile image
+                    setState(() {});
                   },
                 ),
                 SizedBox(width: 10),
@@ -97,8 +110,6 @@ class _HomescreenState extends State<Homescreen> {
               ],
             ),
             SizedBox(height: 20),
-
-            // Add Habit Section
             TextField(
               controller: habitController,
               decoration: InputDecoration(
@@ -109,16 +120,13 @@ class _HomescreenState extends State<Homescreen> {
                     String newHabit = habitController.text;
                     if (newHabit.isNotEmpty) {
                       userController.addHabit(newHabit);
-                      userController
-                          .saveProgress(); // Save progress after adding habit
-
-                      // Trigger a notification after adding a habit
+                      userController.saveProgress();
                       _notificationService.showNotification(
                         'New Habit Added',
                         'You just added a new habit: $newHabit',
                       );
 
-                      habitController.clear(); // Clear input
+                      habitController.clear();
                     }
                   },
                 ),

@@ -87,8 +87,6 @@ class UserController extends GetxController {
 
           final downloadUrl = await (await uploadTask).ref.getDownloadURL();
           profileImageUrl.value = downloadUrl;
-
-          // Update Firestore with the new image URL
           await _firestore.collection('users').doc(uid).update({
             'profileImageUrl': downloadUrl,
           });
@@ -114,33 +112,28 @@ class UserController extends GetxController {
     }
   }
 
-  // New function to save user login state to SharedPreferences
   Future<void> saveLoginState() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('email', email.value);
-    // Optionally save other user information
   }
 
   Future<void> loadLoginState() async {
     final prefs = await SharedPreferences.getInstance();
     email.value = prefs.getString('email') ?? '';
-    // Optionally load other user information
   }
 
   void saveProgress() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid != null) {
-      // Retrieve the user's name
       final userDoc =
           await FirebaseFirestore.instance.collection('users').doc(uid).get();
       final userName = userDoc.data()?['name'] ?? 'Unknown';
 
       final progressData = {
         'date': DateTime.now().toIso8601String(),
-        'userName': userName, // Include the user's name in the progress data
+        'userName': userName,
         'habits': habits
-            .where(
-                (h) => h.name.isNotEmpty) // Filter out habits with empty names
+            .where((h) => h.name.isNotEmpty)
             .map((h) => {
                   'name': h.name,
                   'timeSpent': h.timeSpent,
@@ -228,15 +221,14 @@ class UserController extends GetxController {
   }
 
   void incrementTime(int index) async {
-    habits[index].timeSpent += 10; // Increment by 10 mins
+    habits[index].timeSpent += 10;
     habits.refresh();
     saveHabits();
   }
 
   void decrementTime(int index) async {
-    habits[index].timeSpent = (habits[index].timeSpent - 10)
-        .clamp(0, double.infinity)
-        .toInt(); // Decrement by 10 mins
+    habits[index].timeSpent =
+        (habits[index].timeSpent - 10).clamp(0, double.infinity).toInt();
     habits.refresh();
     saveHabits();
   }
@@ -262,10 +254,7 @@ class UserController extends GetxController {
       final userDoc = await _firestore.collection('users').doc(uid).get();
       final userName = userDoc.data()?['name'] ?? 'Unknown';
 
-      final doc = await _firestore
-          .collection('user_data')
-          .doc(userName) // Loading habits based on the user's name
-          .get();
+      final doc = await _firestore.collection('user_data').doc(userName).get();
 
       if (doc.exists) {
         final List<dynamic> loadedHabits = doc.data()?['habits'] ?? [];

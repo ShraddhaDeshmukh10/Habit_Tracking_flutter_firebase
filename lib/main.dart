@@ -1,24 +1,34 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:habit03/HomeScreen.dart';
 import 'package:habit03/Login.dart';
 import 'package:habit03/controller/ThemeController.dart';
 import 'package:habit03/controller/notification.dart';
 import 'package:habit03/firebase_options.dart';
 import 'package:get/get.dart';
+import 'package:habit03/navi.dart';
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  if (message.data.containsKey('route')) {
+    String route = message.data['route'];
+
+    Get.toNamed(route);
+  }
+  print('Handling a background message: ${message.messageId}');
+}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   final NotificationService _notificationService = NotificationService();
   await _notificationService.init();
 
-  // Configure Firebase Messaging for push notifications
   FirebaseMessaging messaging = FirebaseMessaging.instance;
 
-  // Request permission for iOS
   NotificationSettings settings = await messaging.requestPermission(
     alert: true,
     badge: true,
@@ -48,16 +58,24 @@ class MyApp extends StatelessWidget {
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
             useMaterial3: true,
           ),
-          darkTheme: ThemeData.dark(), // Define dark theme
+          darkTheme: ThemeData.dark(),
           themeMode: themeController.isDarkTheme.value
               ? ThemeMode.dark
               : ThemeMode.light,
-          initialRoute: '/homescreen', // Set initial route
+          initialRoute: '/',
           getPages: [
             GetPage(
+              ///handle nav fun : innput as: rourte from firebase:::::
+              name: '/',
+              page: () => HabitTrackerLogin(),
+            ),
+            GetPage(
               name: '/homescreen',
-              page: () =>
-                  HabitTrackerLogin(), // Navigate from login to homescreen
+              page: () => Homescreen(),
+            ),
+            GetPage(
+              name: '/secondpage',
+              page: () => Navigation0002(),
             ),
           ],
           //home: HabitTrackerLogin(),
